@@ -2,8 +2,11 @@ package com.qnex.jpa.practice;
 
 import com.qnex.jpa.practice.entity.Library;
 import org.apache.log4j.Logger;
+import org.h2.engine.Session;
+import org.hibernate.internal.SessionImpl;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -13,6 +16,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.sql.Connection;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -63,9 +68,6 @@ public class SampleTest {
 
             Library library = entityManager.find(Library.class, 1L);
 
-//            entityManager.close();
-
-
             return library;
         });
 
@@ -90,13 +92,7 @@ public class SampleTest {
             return newLibrary;
         });
 
-//        CompletableFuture.allOf(future1, future2).get();
-
-        future1.get();
-        future2.get();
-
-        System.out.println();
-
+        CompletableFuture.allOf(future1, future2).get();
 
     }
 
@@ -105,8 +101,7 @@ public class SampleTest {
         final EntityManager entityManager = entityManagerBean.getObject();
         Assert.notNull(entityManager, "Must be not null");
 
-        final CountDownLatch latch1 = new CountDownLatch(1);
-        final CountDownLatch latch2 = new CountDownLatch(1);
+        final CountDownLatch syncLatch = new CountDownLatch(1);
         final CountDownLatch afterCommitLatch = new CountDownLatch(1);
 
 
@@ -120,14 +115,13 @@ public class SampleTest {
             txTemplate.execute(status -> {
                 LOG.debug("The transaction 'T1' has been started");
                 try {
-                    latch1.countDown();
-                    latch2.await();
+                    syncLatch.await();
                     Library library = entityManager.find(Library.class, 1L);
                     library.setName("Edited name");
                 } catch (InterruptedException e) {
                     LOG.error(e);
                 }
-                LOG.debug("The transaction 'T1' was being committed");
+                LOG.debug("The transaction 'T1' is being committed");
                 return null;
             });
 
@@ -138,8 +132,7 @@ public class SampleTest {
         CompletableFuture f2 = CompletableFuture.supplyAsync(() -> txTemplate.execute(status -> {
             LOG.debug("The transaction 'T2' has been started");
             try {
-                latch2.countDown();
-                latch1.await();
+                syncLatch.await();
                 Library library = entityManager.find(Library.class, 1L);
                 library.setName("Another Edited name");
             } catch (InterruptedException e) {
@@ -150,10 +143,11 @@ public class SampleTest {
             } catch (InterruptedException e) {
                 LOG.error(e);
             }
-            LOG.debug("The transaction 'T2' was being committed");
+            LOG.debug("The transaction 'T2' is being committed");
             return null;
         }));
 
+        syncLatch.countDown();
         CompletableFuture.allOf(f1, f2).get();
 
         LOG.debug(entityManager.find(Library.class, 1L));
