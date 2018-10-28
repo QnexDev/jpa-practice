@@ -1,0 +1,26 @@
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.2"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+    <persistence-unit name="sample-unit" transaction-type="RESOURCE_LOCAL">
+
+
+        <!--<exclude-unlisted-classes>true</exclude-unlisted-classes>-->
+
+        <!--<class>com.qnex.jpa.practice.entity.Library</class>-->
+
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:sample;MODE=Oracle;DB_CLOSE_DELAY=-1" />
+            <property name="javax.persistence.jdbc.user" value="sa" />
+            <property name="javax.persistence.jdbc.password" value="" />
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
+
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            <!--<property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect" />-->
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+
+
+        </properties>
+
+    </persistence-unit>
+</persistence>
