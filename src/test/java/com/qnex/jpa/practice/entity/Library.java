@@ -10,7 +10,7 @@ public class Library {
     @Id
     private Long id;
 
-    @Version
+//    @Version
     private Long version;
 
     private String name;

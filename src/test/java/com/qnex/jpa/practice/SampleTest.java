@@ -12,10 +12,7 @@ import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -117,7 +114,10 @@ public class SampleTest {
                 try {
                     syncLatch.await();
                     Library library = entityManager.find(Library.class, 1L);
+                    entityManager.lock(library, LockModeType.PESSIMISTIC_WRITE);
                     library.setName("Edited name");
+                    Thread.sleep(5000);
+                    LOG.debug("Finished!!!!!!!!!!!!!!!!!111");
                 } catch (InterruptedException e) {
                     LOG.error(e);
                 }
@@ -134,7 +134,10 @@ public class SampleTest {
             try {
                 syncLatch.await();
                 Library library = entityManager.find(Library.class, 1L);
+                entityManager.lock(library, LockModeType.PESSIMISTIC_WRITE);
                 library.setName("Another Edited name");
+                entityManager.flush();
+                LOG.debug("Flushed");
             } catch (InterruptedException e) {
                 LOG.error(e);
             }

@@ -9,7 +9,7 @@
         <!--<class>com.qnex.jpa.practice.entity.Library</class>-->
 
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:sample;MODE=Oracle;DB_CLOSE_DELAY=-1" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:sample;MODE=Oracle;DEFAULT_LOCK_TIMEOUT=10000;" />
             <property name="javax.persistence.jdbc.user" value="sa" />
             <property name="javax.persistence.jdbc.password" value="" />
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
@@ -19,6 +19,7 @@
             <!--<property name="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect" />-->
             <property name="hibernate.hbm2ddl.auto" value="create" />
 
+            <!--<property name="show_sql" value="true"/>-->
 
         </properties>
 
