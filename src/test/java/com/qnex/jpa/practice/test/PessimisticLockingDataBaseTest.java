@@ -1,5 +1,6 @@
 package com.qnex.jpa.practice.test;
 
+import com.google.common.collect.ImmutableMap;
 import com.qnex.jpa.practice.PostgresDataSource;
 import com.qnex.jpa.practice.entity.Library;
 import com.qnex.jpa.practice.entity.LibraryType;
@@ -9,6 +10,7 @@ import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
+import javax.persistence.LockTimeoutException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,9 +33,8 @@ public class PessimisticLockingDataBaseTest extends AbstractDataBaseTest {
             txOperations.execute(status -> {
                 try {
                     syncLatch.await();
-                    Library library = entityManager.find(Library.class, 1L);
+                    Library library = entityManager.find(Library.class, 1L, LockModeType.PESSIMISTIC_WRITE);
                     library.setName("Edited name");
-                    entityManager.lock(library, LockModeType.PESSIMISTIC_READ);
                     afterCommitLatch.countDown();
                     delay(5000);
                 } catch (InterruptedException e) {
@@ -47,10 +48,15 @@ public class PessimisticLockingDataBaseTest extends AbstractDataBaseTest {
         CompletableFuture f2 = CompletableFuture.supplyAsync(() -> txOperations.execute(status -> {
             try {
                 syncLatch.await();
-                Library library = entityManager.find(Library.class, 1L);
-//                entityManager.lock(library, LockModeType.PESSIMISTIC_WRITE);
-                library.setName("Another Edited name");
                 afterCommitLatch.await();
+                try {
+                    Library library = entityManager.find(Library.class, 1L, LockModeType.PESSIMISTIC_READ,
+                            ImmutableMap.of("javax.persistence.lock.timeout", 0));
+                } catch (LockTimeoutException e) {
+                    LOG.error(e);
+                }
+//                entityManager.lock(library, LockModeType.PESSIMISTIC_WRITE);
+//                library.setName("Another Edited name");
             } catch (InterruptedException e) {
                 LOG.error(e);
             }

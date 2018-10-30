@@ -14,6 +14,7 @@ public class Library {
     private String name;
 
     @ManyToOne
+    @JoinColumn(name = "library_type_id")
     private LibraryType libraryType;
 
 

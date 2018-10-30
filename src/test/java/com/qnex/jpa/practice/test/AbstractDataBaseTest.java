@@ -6,6 +6,7 @@ import com.qnex.jpa.practice.HSQLDBDataSource;
 import com.qnex.jpa.practice.util.LoggableTransactionTemplate;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -30,18 +31,18 @@ public class AbstractDataBaseTest {
     protected SharedEntityManagerBean entityManagerBean;
     protected JdbcTemplate jdbcTemplate;
     protected DataSource dataSource;
-    private DataBaseSettingProvider dbSettingProvider;
+    private DataBaseConfigProvider dbSettingProvider;
 
     public AbstractDataBaseTest() {
         Class<? extends AbstractDataBaseTest> thisClass = this.getClass();
         if (thisClass.isAnnotationPresent(HSQLDBDataSource.class)) {
-            dbSettingProvider = new HSQLDBSettingProvider();
+            dbSettingProvider = new HSQLDBConfigProvider();
         } else if (thisClass.isAnnotationPresent(PostgresDataSource.class)) {
-            dbSettingProvider = new PostgresSettingProvider();
+            dbSettingProvider = new PostgresConfigProvider();
         } else if (thisClass.isAnnotationPresent(H2DataSource.class)) {
-            dbSettingProvider = new H2SettingProvider();
+            dbSettingProvider = new H2ConfigProvider();
         } else {
-            dbSettingProvider = new HSQLDBSettingProvider();
+            dbSettingProvider = new HSQLDBConfigProvider();
         }
     }
 
@@ -81,6 +82,11 @@ public class AbstractDataBaseTest {
         entityManagerBean.afterPropertiesSet();
     }
 
+    @After
+    public void cleanUp() {
+        entityManagerFactory.close();
+    }
+
     public static void delay(int millis) {
         try {
             LOG.debug("Starting delay...");
@@ -91,7 +97,7 @@ public class AbstractDataBaseTest {
         }
     }
 
-    interface DataBaseSettingProvider {
+    interface DataBaseConfigProvider {
 
         DataSource configureDataSource();
 
@@ -100,7 +106,7 @@ public class AbstractDataBaseTest {
         String getDataBaseName();
     }
 
-    public class PostgresSettingProvider implements AbstractDataBaseTest.DataBaseSettingProvider {
+    public class PostgresConfigProvider implements DataBaseConfigProvider {
 
         @Override
         public DataSource configureDataSource() {
@@ -130,7 +136,7 @@ public class AbstractDataBaseTest {
 
     }
 
-    public class HSQLDBSettingProvider implements AbstractDataBaseTest.DataBaseSettingProvider {
+    public class HSQLDBConfigProvider implements DataBaseConfigProvider {
         @Override
         public DataSource configureDataSource() {
             return provideEmbeddedDataSource();
@@ -138,7 +144,7 @@ public class AbstractDataBaseTest {
 
         @Override
         public String getDialect() {
-            return null;
+            return "org.hibernate.dialect.HSQLDialect";
         }
 
         @Override
@@ -158,7 +164,7 @@ public class AbstractDataBaseTest {
 
     }
 
-    public class H2SettingProvider implements AbstractDataBaseTest.DataBaseSettingProvider {
+    public class H2ConfigProvider implements DataBaseConfigProvider {
         @Override
         public DataSource configureDataSource() {
             return provideEmbeddedDataSource();
@@ -166,7 +172,7 @@ public class AbstractDataBaseTest {
 
         @Override
         public String getDialect() {
-            return null;
+            return "org.hibernate.dialect.H2Dialect";
         }
 
         @Override

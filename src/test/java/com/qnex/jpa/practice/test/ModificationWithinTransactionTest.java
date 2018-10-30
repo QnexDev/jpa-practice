@@ -13,13 +13,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 @PostgresDataSource
-public class ModificationWithinTransactionDataBaseTest extends AbstractDataBaseTest {
+public class ModificationWithinTransactionTest extends AbstractDataBaseTest {
 
-    private static final Logger LOG = Logger.getLogger(ModificationWithinTransactionDataBaseTest.class);
+    private static final Logger LOG = Logger.getLogger(ModificationWithinTransactionTest.class);
 
 
     @Test
-    public void process() throws Exception {
+    public void checking() throws Exception {
         final EntityManager entityManager = entityManagerBean.getObject();
         Assert.notNull(entityManager, "Must not be null");
 
