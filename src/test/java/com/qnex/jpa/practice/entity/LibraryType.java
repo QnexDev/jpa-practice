@@ -10,9 +10,10 @@ public class LibraryType {
     private Long id;
     private String type;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "library_type_id")
-    private List<Library> libraries;
+//    @OneToMany(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "library_type_id")
+    @ElementCollection
+    private List<String> libraries;
 
 
     public Long getId() {
@@ -31,11 +32,11 @@ public class LibraryType {
         this.type = type;
     }
 
-    public List<Library> getLibraries() {
+    public List<String> getLibraries() {
         return libraries;
     }
 
-    public void setLibraries(List<Library> libraries) {
+    public void setLibraries(List<String> libraries) {
         this.libraries = libraries;
     }
 }

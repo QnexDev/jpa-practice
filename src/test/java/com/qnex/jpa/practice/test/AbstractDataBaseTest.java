@@ -1,8 +1,8 @@
 package com.qnex.jpa.practice.test;
 
 import com.qnex.jpa.practice.H2DataSource;
-import com.qnex.jpa.practice.PostgresDataSource;
 import com.qnex.jpa.practice.HSQLDBDataSource;
+import com.qnex.jpa.practice.PostgresDataSource;
 import com.qnex.jpa.practice.util.LoggableTransactionTemplate;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
@@ -18,6 +18,7 @@ import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -84,7 +85,9 @@ public class AbstractDataBaseTest {
 
     @After
     public void cleanUp() {
-        entityManagerFactory.close();
+        if (entityManagerFactory != null) {
+            entityManagerFactory.close();
+        }
     }
 
     public static void delay(int millis) {
@@ -95,6 +98,10 @@ public class AbstractDataBaseTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public EntityManager getEntityManager() {
+        return entityManagerBean.getObject();
     }
 
     interface DataBaseConfigProvider {

@@ -1,6 +1,9 @@
 package com.qnex.jpa.practice.entity;
 
 import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Library {
@@ -13,9 +16,23 @@ public class Library {
 
     private String name;
 
+    private Date created;
+
     @ManyToOne
     @JoinColumn(name = "library_type_id")
     private LibraryType libraryType;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            joinColumns = @JoinColumn(name = "library_id"),
+            inverseJoinColumns = @JoinColumn(name = "book_id"))
+    @OrderColumn
+    private List<Book> books;
+
+    @OneToMany(fetch = FetchType.EAGER)
+//    @Fetch(FetchMode.SUBSELECT)
+//    @OrderColumn
+    private Set<Author> authors;
 
 
     public Library() {
@@ -66,6 +83,30 @@ public class Library {
 
     public void setLibraryType(LibraryType libraryType) {
         this.libraryType = libraryType;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
+
+    public Set<Author> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(Set<Author> authors) {
+        this.authors = authors;
     }
 
     @Override
