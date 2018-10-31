@@ -1,5 +1,6 @@
 package com.qnex.jpa.practice.util;
 
+import net.ttddyy.dsproxy.QueryCountHolder;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionCallback;
@@ -18,6 +19,7 @@ public class LoggableTransactionTemplate implements TransactionOperations {
 
     @Override
     public <T> T execute(TransactionCallback<T> action) throws TransactionException {
+        QueryCountHolder.clear();
         String txName = Thread.currentThread().getName();
         LOG.debug("The transaction '" + txName + "' has been started");
         T result = txOperations.execute(action);

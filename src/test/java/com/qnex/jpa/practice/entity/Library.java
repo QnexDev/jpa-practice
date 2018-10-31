@@ -1,9 +1,11 @@
 package com.qnex.jpa.practice.entity;
 
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 public class Library {
@@ -22,17 +24,14 @@ public class Library {
     @JoinColumn(name = "library_type_id")
     private LibraryType libraryType;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(
+            name = "Library_Book",
             joinColumns = @JoinColumn(name = "library_id"),
             inverseJoinColumns = @JoinColumn(name = "book_id"))
-    @OrderColumn
-    private List<Book> books;
+    @BatchSize(size = 100)
+    private List<Book> books = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.EAGER)
-//    @Fetch(FetchMode.SUBSELECT)
-//    @OrderColumn
-    private Set<Author> authors;
 
 
     public Library() {
@@ -99,14 +98,6 @@ public class Library {
 
     public void setBooks(List<Book> books) {
         this.books = books;
-    }
-
-    public Set<Author> getAuthors() {
-        return authors;
-    }
-
-    public void setAuthors(Set<Author> authors) {
-        this.authors = authors;
     }
 
     @Override

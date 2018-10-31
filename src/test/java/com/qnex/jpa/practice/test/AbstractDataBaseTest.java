@@ -4,6 +4,11 @@ import com.qnex.jpa.practice.H2DataSource;
 import com.qnex.jpa.practice.HSQLDBDataSource;
 import com.qnex.jpa.practice.PostgresDataSource;
 import com.qnex.jpa.practice.util.LoggableTransactionTemplate;
+import net.ttddyy.dsproxy.QueryCountHolder;
+import net.ttddyy.dsproxy.listener.ChainListener;
+import net.ttddyy.dsproxy.listener.DataSourceQueryCountListener;
+import net.ttddyy.dsproxy.listener.logging.CommonsQueryLoggingListener;
+import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -21,6 +26,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.util.Arrays;
 
 public class AbstractDataBaseTest {
 
@@ -49,7 +55,7 @@ public class AbstractDataBaseTest {
 
     @Before
     public void init() {
-        dataSource = dbSettingProvider.configureDataSource();
+        dataSource = wrapDataSourceWithProxy(dbSettingProvider.configureDataSource());
 
         String dataBaseName = dbSettingProvider.getDataBaseName();
         if (StringUtils.hasLength(dataBaseName)) {
@@ -83,11 +89,20 @@ public class AbstractDataBaseTest {
         entityManagerBean.afterPropertiesSet();
     }
 
+    private DataSource wrapDataSourceWithProxy(DataSource dataSource) {
+        ProxyDataSource proxyDataSource = new ProxyDataSource(dataSource);
+        ChainListener listener = new ChainListener();
+        listener.setListeners(Arrays.asList(new CommonsQueryLoggingListener(), new DataSourceQueryCountListener()));
+        proxyDataSource.addListener(listener);
+        return proxyDataSource;
+    }
+
     @After
     public void cleanUp() {
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
         }
+        QueryCountHolder.clear();
     }
 
     public static void delay(int millis) {

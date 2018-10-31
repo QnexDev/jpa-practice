@@ -1,9 +1,12 @@
 package com.qnex.jpa.practice.entity;
 
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,8 +17,9 @@ public class Book {
 
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Library> libraries;
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "books")
+    @BatchSize(size = 100)
+    private List<Library> libraries = new ArrayList<>();
 
     public Book() {
     }
